@@ -1,0 +1,126 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "budgetName": {
+            "type": "String",
+            "metadata": {
+                "description": "Name of the Budget. It should be unique within a resource group."
+            }
+        },
+        "amount": {
+            "type": "Int",
+            "metadata": {
+                "description": "The total amount of cost or usage to track with the budget"
+            }
+        },
+        "categoryType": {
+            "defaultValue": "Cost",
+            "allowedValues": [
+                "Cost",
+                "Usage"
+            ],
+            "type": "String",
+            "metadata": {
+                "description": "The category of the budget, whether the budget tracks cost or usage."
+            }
+        },
+        "timeGrain": {
+            "defaultValue": "Monthly",
+            "allowedValues": [
+                "Monthly",
+                "Quarterly",
+                "Annually"
+            ],
+            "type": "String",
+            "metadata": {
+                "description": "The time covered by a budget. Tracking of the amount will be reset based on the time grain."
+            }
+        },
+        "startDate": {
+            "type": "String",
+            "metadata": {
+                "description": "The start date must be first of the month in YYYY-MM-DD format. Future start date should not be more than three months. Past start date should be selected within the timegrain period."
+            }
+        },
+        "endDate": {
+            "type": "String",
+            "metadata": {
+                "description": "The end date for the budget in YYYY-MM-DD format. If not provided, we default this to 10 years from the start date."
+            }
+        },
+        "contactRoles": {
+            "defaultValue": [
+                "Owner",
+                "Contributor",
+                "Reader"
+            ],
+            "type": "Array",
+            "metadata": {
+                "description": "The list of contact roles to send the budget notification to when the threshold is exceeded."
+            }
+        },
+        "contactEmails": {
+            "type": "Array",
+            "metadata": {
+                "description": "The list of email addresses to send the budget notification to when the threshold is exceeded. Comma-separated list of email addresses to filter on. Enclosed in double quotes and brackets [] "
+            }
+        },
+        "contactGroups": {
+            "defaultValue": [],
+            "type": "Array",
+            "metadata": {
+                "description": "The list of action groups to send the budget notification to when the threshold is exceeded. Comma-separated list of action groups to filter on. Enclosed in double quotes and brackets []"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Consumption/budgets",
+            "apiVersion": "2024-08-01",
+            "name": "[parameters('budgetName')]",
+            "properties": {
+                "timePeriod": {
+                    "startDate": "[parameters('startDate')]",
+                    "endDate": "[parameters('endDate')]"
+                },
+                "timeGrain": "[parameters('timeGrain')]",
+                "amount": "[parameters('amount')]",
+                "category": "[parameters('categoryType')]",
+                "notifications": {
+                    "Actual_GreaterThan_75": {
+                        "enabled": true,
+                        "locale": "en-us",
+                        "operator": "GreaterThan",
+                        "threshold": 75,
+                        "thresholdType": "Actual",
+                        "contactEmails": "[parameters('contactEmails')]",
+                        "contactRoles": "[parameters('contactRoles')]",
+                        "contactGroups": "[if(empty(parameters('contactGroups')), json('null'), parameters('contactGroups'))]"
+                    },
+                    "Actual_GreaterThan_90": {
+                        "enabled": true,
+                        "locale": "en-us",
+                        "operator": "GreaterThan",
+                        "threshold": 90,
+                        "thresholdType": "Actual",
+                        "contactEmails": "[parameters('contactEmails')]",
+                        "contactRoles": "[parameters('contactRoles')]",
+                        "contactGroups": "[if(empty(parameters('contactGroups')), json('null'), parameters('contactGroups'))]"
+                    },
+                    "Forecasted_GreaterThan_105": {
+                        "enabled": true,
+                        "locale": "en-us",
+                        "operator": "GreaterThan",
+                        "threshold": 105,
+                        "thresholdType": "Forecasted",
+                        "contactEmails": "[parameters('contactEmails')]",
+                        "contactRoles": "[parameters('contactRoles')]",
+                        "contactGroups": "[if(empty(parameters('contactGroups')), json('null'), parameters('contactGroups'))]"
+                    }
+                }
+            }
+        }
+    ]
+}
